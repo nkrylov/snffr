@@ -13,3 +13,5 @@ erl_crash.dump
 .rebar
 logs
 _build
+priv/bin/*
+rebar.lock
