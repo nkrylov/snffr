@@ -1,0 +1,19 @@
+{application, snffr,
+ [{description, "An OTP application"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, { snffr_app, []}},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[
+    {app_name, "snffr"}, % Binary file name
+    {poll_tmo, 500}
+  ]},
+  {modules, [snffr_port, snffr_sup, snffr, snffr_utils]},
+
+  {maintainers, []},
+  {licenses, []},
+  {links, []}
+ ]}.
