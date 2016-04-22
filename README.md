@@ -12,9 +12,9 @@ binary_to_hexstring(Binary) when is_binary(Binary) ->
 ### Dependencies
 
 Snffr was built using:
-* [Erlang/OTP] - capture processing  
+* [Erlang/OTP] - capture post-processing  
 * [libpcap] - capture IP packets
-* [rebar3] - built system
+* [rebar3] - build system
 * [ostinato] - traffic generator for testing
 
 ### Build
