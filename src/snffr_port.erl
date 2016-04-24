@@ -14,7 +14,8 @@
          terminate/2,
          code_change/3]).
 
--export([attach/0, 
+-export([init/0,
+         attach/1, 
          detach/0,
          get_packet/0,
          stop/0]).
@@ -30,8 +31,11 @@ start_link(PortName, PollTmo) ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [PortName, PollTmo], []).
 
 
-attach() ->
-  gen_server:call(?MODULE, attach).
+init() ->
+  gen_server:call(?MODULE, init).
+
+attach(Dev) ->
+  gen_server:call(?MODULE, {attach, [Dev]}).
 
 detach() ->
   gen_server:call(?MODULE, detach).
@@ -60,8 +64,12 @@ init([PortName, PollTmo]) ->
       {ok, #state{port = Port}}
   end.
 
+handle_call({Cmd, Args}, From, #state{port = Port} = State) when is_atom(Cmd) ->
+  send_to_port(Port, {From, {Cmd, Args}}),
+  {noreply, State}; % Will reply when the port send something back
+
 handle_call(Cmd, From, #state{port = Port} = State) when is_atom(Cmd) ->
-  send_to_port(Port, {From, Cmd}),
+  send_to_port(Port, {From, {Cmd, []}}),
   {noreply, State}; % Will reply when the port send something back
 
 handle_call(_, _, State) ->

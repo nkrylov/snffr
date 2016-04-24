@@ -14,8 +14,8 @@
          terminate/2,
          code_change/3]).
 
--export([print_hex/1]).
--record(state, {filters, iface}).
+-export([add_printer/1, print/1]).
+-record(state, {printers}).
 
 %% API
 
@@ -25,19 +25,26 @@ start() ->
 start_link() -> 
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-print_hex(Packet) when is_binary(Packet) ->
-  gen_server:call(?MODULE, {print_hex, Packet}).
+add_printer(Printer) ->
+  gen_server:call(?MODULE, {add_printer, Printer}).
+
+print(Packet) when is_binary(Packet) ->
+  gen_server:call(?MODULE, {print_packet, Packet}).
 
 %% Helper funcitons
 
 %% GS callbacks
 init([]) -> 
-  {ok, Iface} = snffr_port:attach(),
-  io:format("Ready to capture on ~s~n", [binary_to_list(Iface)]),
-  {ok, #state{filters = [], iface = Iface}}.
+  {ok, Ifaces} = snffr_port:init(),
+  io:format("Ready to capture on:~n"),
+  [io:format("~p~n", [binary_to_atom(Iface, utf8)]) || Iface <- Ifaces],
+  {ok, #state{printers = []}}.
 
-handle_call({print_hex, Packet}, _From, State) ->
-  io:format("Implement me~n"),
+handle_call({add_printer, Printer}, _From, #state{printers = Printers} = State) ->
+  {reply, ok, State#state{printers = [Printer | Printers]}};
+
+handle_call({print_packet, Packet}, _From, #state{ printers = Printers} = State) ->
+  [ Printer(Packet) || Printer <- Printers ],
   {reply, ok, State}; 
 
 handle_call(_, _, State) ->

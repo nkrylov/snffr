@@ -4,8 +4,17 @@
 -compile(export_all).
 
 
-print_hex() ->
+attach(Iface) ->
+  snffr_port:attach(Iface).
+
+packet() ->
   case snffr_port:get_packet() of
-    {ok, Packet} -> snffr_packet_mgr:print_hex(Packet);
+    {ok, [Packet]} -> Packet;
     {error, Reason} -> io:format("Coudn't capture the packet: ~p~n", [Reason])
   end.
+
+add_printer(Fun) ->
+  snffr_packet_mgr:add_printer(Fun).
+
+print(Packet) when is_binary(Packet) ->
+  snffr_packet_mgr:print(Packet).

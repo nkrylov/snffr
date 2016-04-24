@@ -18,11 +18,9 @@ int main( int argc, char *argv[] ) {
 
   char cmd_buf[MAX_ERL_PIPE_SZ];
   ErlangRX rx;
-  ErlangTX tx;
-
-  char* dev;
-  char errbuf[PCAP_ERRBUF_SIZE];
   pcap_t* descr = NULL;
+  pcap_if_t *interfaces = NULL,*temp;
+  char errbuf[PCAP_ERRBUF_SIZE];
   const u_char *packet;
   struct pcap_pkthdr hdr;
 
@@ -34,64 +32,74 @@ int main( int argc, char *argv[] ) {
 
     unsigned int cmd_len = 0;
     std::string cmd;
-    erlang_pid pid;
-    erlang_ref ref;
+    std::vector<std::string> args;
  
-    while( (cmd_len = rx.read_command(cmd_buf, MAX_ERL_PIPE_SZ, pid, ref, cmd)) > 0 ) {
+    while( (cmd_len = rx.read_command(cmd_buf, MAX_ERL_PIPE_SZ, cmd, args)) > 0 ) {
       
       // execute
+      ErlangTX tx(rx);
+      if (0 == cmd.compare("init")) {
 
-      if (0 == cmd.compare("attach")) {
+        if (-1 == pcap_findalldevs(&interfaces, errbuf)) {
+          tx.reply_error(errbuf);
+          continue;
+        }
+
+        std::vector<std::string> devs; 
+        for(temp=interfaces;temp;temp=temp->next)
+        {
+            devs.push_back(std::string(temp->name));      
+        }
+        tx.reply_ok(devs);
+      } else if (0 == cmd.compare("attach") && (1 == args.size())) {
 
           if (NULL != descr) {
-            tx.reply_error(pid, ref, "already_opened");
+            tx.reply_error("already_opened");
           }
 
-          dev = pcap_lookupdev(errbuf);
-
-          if (NULL == dev) {
-            tx.reply_error(pid, ref, errbuf);
-            continue;
-          } 
-
+          const char *dev = args[0].c_str();
+          fprintf(stderr, "attching to %s\n", args[0].c_str());
           descr = pcap_open_live(dev, BUFSIZ, 1, pcap_tmo, errbuf);
           
           if (NULL == descr) {
-            tx.reply_error(pid, ref, errbuf);
+            tx.reply_error(errbuf);
             continue;
           }
-
-          tx.reply_ok(pid, ref, dev, strlen(dev));      
+          std::vector<std::string> reply;
+          reply.push_back(dev);
+          tx.reply_ok(reply);      
 
       } else if (0 == cmd.compare("get_packet")) {
 
         if (NULL == descr) {
-          tx.reply_error(pid, ref, "not_initialized");    
+          tx.reply_error("not_initialized");    
           continue;
         }
         
         packet = pcap_next(descr,&hdr);
         if (NULL == packet) {
-          tx.reply_error(pid, ref, "timeout");  
+          tx.reply_error("timeout");  
           continue;
         }
-
-        tx.reply_ok(pid, ref, (char *)packet, hdr.caplen);
-      } else if (0 == cmd.compare("detach")) {
+        std::string bin((char*)packet, hdr.caplen);
+        std::vector<std::string> reply;
+        reply.push_back(bin);
+        tx.reply_ok(reply);
+      } else if (0 == cmd.compare("shutdown")) {
 
         if (NULL == descr) {
-          tx.reply_error(pid, ref, "not_initialized");    
+          tx.reply_error("not_initialized");    
           continue;
         }
 
         pcap_close(descr);
         descr = NULL;
 
-        tx.reply_ok(pid, ref, dev, strlen(dev));
-        dev = NULL;
+        tx.reply_ok(std::vector<std::string>());
+        descr = NULL;
 
       } else {  
-        tx.reply_error(pid, ref, "unknown_command");
+        tx.reply_error("unknown_command");
       }
    
     }
