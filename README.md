@@ -27,12 +27,12 @@ Snffr was built using:
 ### Build
 
 ```sh
-$ git clone ttps://github.com/nkrylov/snffr.git 
+$ git clone https://github.com/nkrylov/snffr.git 
 $ cd snffr
 $ make
 ```
 
-### Use in Elang console
+### Use in Elang console (runs Erlang as sudo and starts the application)
 ```sh
 $ make console
 ```
