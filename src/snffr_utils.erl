@@ -39,9 +39,12 @@ print_hex(Packet) when is_binary(Packet) -> io:format("HEX dump:~n"), print_hex(
 
 print_hex(Packet, Line) when is_binary(Packet) andalso size(Packet) =< ?BYTES_PER_LINE->
   print_line_number(Line), 
-  <<L:(?BYTES_PER_LINE div 2)/binary, R/binary>> = Packet,
-  io:format("~s    ", [binary_to_hexstring(L)]),
-  io:format("~s~n", [binary_to_hexstring(R)]);
+  case Packet of 
+    <<L:(?BYTES_PER_LINE div 2)/binary, R/binary>> ->
+      io:format("~s    ", [binary_to_hexstring(L)]),
+      io:format("~s~n", [binary_to_hexstring(R)]);
+    Packet -> io:format("~s~n", [binary_to_hexstring(Packet)])
+  end;
 
 print_hex(<<Packet:?BYTES_PER_LINE/binary, Rest/binary>>, Line) ->
   print_hex(Packet, Line),
