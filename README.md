@@ -1,6 +1,8 @@
 # Snffr 
 
-Snffr is a simple Erlang application with a C-port interface to libpcap. It was design to demonstrate one of Erlang's most powerful features - binary pattern matching. For example, this function prints some fields from an IP header and produces no output if the binary doesn't match:
+Snffr is a simple Erlang application with a C-port interface to [libpcap]. It was design to demonstrate one of Erlang's most powerful features - binary pattern matching. The idea was to create an environment where a packet can be parsed and printed to the console using just a few lines of code. 
+
+For example, this function prints some fields from an IP header and produces no output if the binary doesn't match:
 
 ```erlang
 print_ipv4(<<_MAC:12/bytes, 16#0800:16, Packet/binary>>) ->
@@ -12,11 +14,7 @@ print_ipv4(<<_MAC:12/bytes, 16#0800:16, Packet/binary>>) ->
 print_ipv4(_P) -> ok.
 ```
 
-Module [snffr_utils.erl] contains more examples of such printer funtions. More functions like this can be added to the module as long as they have the following spec:
-
-```erlang
- -spec(print_whatever(binary()) -> ok).
-```
+Module [snffr_utils.erl] contains more examples of such printer funtions. More functions like this can be added to the module as long as they take a binary as a parametter and produce some output depending on the binary's contents.
 
 ### Dependencies
 
