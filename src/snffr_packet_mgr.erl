@@ -36,8 +36,15 @@ print(Packet) when is_binary(Packet) ->
 %% GS callbacks
 init([]) -> 
   {ok, Ifaces} = snffr_port:init(),
-  io:format("Ready to capture on:~n"),
+  io:format("Welcome to snffr console. Here's what you can do:~n"),
+  io:format("1. run snffr:attach(<interface>) to start listening where <interface> is one of:~n"),
   [io:format("~p~n", [binary_to_atom(Iface, utf8)]) || Iface <- Ifaces],
+  io:format("2. Select a printer(s) from the list below and run snffr:add_printer(<printer>)~n"),
+  io:format(" or snffr:add_printer([<p1>, ..., <pN>]) where printers are:~n"),
+  N = [ Name || {Name, Arity} <- snffr_utils:module_info(exports), Name /= module_info, Arity == 1 ],
+  lists:foreach(fun(P) -> io:format(" ~p~n", [P]) end, N),
+  io:format("3. snffr:print(snffr:packet()). - to grab a packet and pass it through all printers you selected.~n"),
+  io:format("4. type q(). to exit~n"),
   {ok, #state{printers = []}}.
 
 handle_call({add_printer, Printer}, _From, #state{printers = Printers} = State) ->
