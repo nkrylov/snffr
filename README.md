@@ -1,6 +1,6 @@
 # Snffr 
 
-Snffr is a simple Erlang application with a C-port interface to [libpcap]. It was design to demonstrate one of Erlang's most powerful features - binary pattern matching. The idea was to create an environment where a packet can be parsed and printed to the console using just a few lines of code. 
+Snffr is a simple Erlang application with a C-port interface to [libpcap]. It was designed to demonstrate one of Erlang's most powerful features - binary pattern matching. The idea was to create an environment where a packet can be parsed and printed to the console using just a few lines of code. 
 
 For example, this function prints some fields from an IP header and produces no output if the binary doesn't match:
 
