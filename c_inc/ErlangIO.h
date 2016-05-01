@@ -51,7 +51,6 @@ private:
     int write_response(ei_x_buff *buff);
    
 public:
-//    ErlangTX(ErlangRX& rx) : ErlangIO(1), m_len(0) { set_pid(rx.get_pid()); set_ref(rx.get_ref()); }
     ErlangTX(ErlangRX& rx) : ErlangIO(1, rx.get_pid(), rx.get_ref()), m_len(0) {}
     virtual ~ErlangTX() { } 
     int reply_to(const ErlangRX& rx);
