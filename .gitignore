@@ -15,3 +15,5 @@ logs
 _build
 priv/bin/*
 rebar.lock
+_build/default/lib/snffr/www/*
+_build/default/lib/snffr/log/*

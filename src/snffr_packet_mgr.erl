@@ -14,8 +14,8 @@
          terminate/2,
          code_change/3]).
 
--export([add_printer/1, print/1]).
--record(state, {printers}).
+-export([add_printer/1, print/1, get_last_packet/0]).
+-record(state, {printers, last_pkt}).
 
 %% API
 
@@ -31,6 +31,8 @@ add_printer(Printer) ->
 print(Packet) when is_binary(Packet) ->
   gen_server:call(?MODULE, {print_packet, Packet}).
 
+get_last_packet() ->
+  gen_server:call(?MODULE, get_last_packet).
 %% Helper funcitons
 
 %% GS callbacks
@@ -45,14 +47,20 @@ init([]) ->
   lists:foreach(fun(P) -> io:format(" ~p~n", [P]) end, N),
   io:format("3. snffr:print(snffr:packet()). - to grab a packet and pass it through all printers you selected.~n"),
   io:format("4. type q(). to exit~n"),
-  {ok, #state{printers = []}}.
+  {ok, #state{printers = [], last_pkt = undefined}}.
 
 handle_call({add_printer, Printer}, _From, #state{printers = Printers} = State) ->
   {reply, ok, State#state{printers = [Printer | Printers]}};
 
 handle_call({print_packet, Packet}, _From, #state{ printers = Printers} = State) ->
-  [ Printer(Packet) || Printer <- Printers ],
-  {reply, ok, State}; 
+  [ io:format("~s~n", [Printer(Packet)]) || Printer <- Printers ],
+  {reply, ok, State#state{last_pkt = Packet}}; 
+
+handle_call(get_last_packet, _From, #state{last_pkt = Packet} = State) ->
+  case Packet of 
+    undefined -> {reply, {error, no_packets}, State};
+    _ -> {reply, {ok, Packet}, State}
+  end;
 
 handle_call(_, _, State) ->
   {reply, {error, not_implemented}, State}.
@@ -64,7 +72,8 @@ handle_info(_, State) -> {noreply, State}.
 
 terminate(_Reason, _State) -> 
   snffr_port:detach(),
-  snffr_port:stop().
+  snffr_port:stop(),
+  snffr_web_iface:stop().
 
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
 

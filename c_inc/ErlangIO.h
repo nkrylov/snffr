@@ -23,6 +23,7 @@ public:
   const erlang_pid get_pid() {return m_pid;}
   const erlang_ref get_ref() {return m_ref;}
   ErlangIO(int fd) : m_dscr(fd) {}
+  ErlangIO(int fd, erlang_pid p, erlang_ref r) : m_dscr(fd), m_pid(p), m_ref(r) {}
   virtual ~ErlangIO() {}
 };
 
@@ -35,8 +36,6 @@ private:
 public:
     ErlangRX() : ErlangIO(0), m_len(0) {}
     virtual ~ErlangRX() {}
-    erlang_pid get_pid() { return m_pid; }
-    erlang_ref get_ref() { return m_ref; }
     int read_command(char *buf, int buflen, std::string& cmd, std::vector<std::string>& args);
     int read_stream();
  
@@ -50,11 +49,10 @@ private:
     int encode_hdr(ei_x_buff& buf);
     int write_stream();
     int write_response(ei_x_buff *buff);
-    void set_pid(erlang_pid pid) {m_pid = pid;}
-    void set_ref(erlang_ref ref) {m_ref = ref;}
    
 public:
-    ErlangTX(ErlangRX& rx) : ErlangIO(1), m_len(0) { set_pid(rx.get_pid()); set_ref(rx.get_ref()); }
+//    ErlangTX(ErlangRX& rx) : ErlangIO(1), m_len(0) { set_pid(rx.get_pid()); set_ref(rx.get_ref()); }
+    ErlangTX(ErlangRX& rx) : ErlangIO(1, rx.get_pid(), rx.get_ref()), m_len(0) {}
     virtual ~ErlangTX() { } 
     int reply_to(const ErlangRX& rx);
     int reply_ok(const std::vector<std::string>& reply); 

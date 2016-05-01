@@ -3,9 +3,15 @@
 -module(snffr).
 -compile(export_all).
 
+debug(Iface) ->
+  snffr_port:attach(Iface),
+  add_printer([print_hex, print_eth, print_ipv4]).
 
 attach(Iface) ->
   snffr_port:attach(Iface).
+
+detach() ->
+  snffr_port:detach().
 
 packet() ->
   case snffr_port:get_packet() of

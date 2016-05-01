@@ -33,8 +33,9 @@ init([]) ->
     {ok, PollTmo} = application:get_env(poll_tmo), %libpcap timeout for pcap_next()
     Modules = [
       ?CHILD_SPEC(snffr_port, [AppName, PollTmo]),
+      ?CHILD_SPEC(snffr_web_iface, []),
       ?CHILD_SPEC(snffr_packet_mgr, [])
-    ],
+          ],
     {ok, { {one_for_all, 0, 1}, Modules} }.
 
 %%====================================================================

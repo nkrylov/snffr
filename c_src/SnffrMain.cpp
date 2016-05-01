@@ -85,7 +85,7 @@ int main( int argc, char *argv[] ) {
         std::vector<std::string> reply;
         reply.push_back(bin);
         tx.reply_ok(reply);
-      } else if (0 == cmd.compare("shutdown")) {
+      } else if (0 == cmd.compare("detach")) {
 
         if (NULL == descr) {
           tx.reply_error("not_initialized");    
